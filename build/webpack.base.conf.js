@@ -64,14 +64,20 @@ let webpackConfig = {
           name: utils.assetsPath('fonts/[name].[hash:7].[ext]')
         }
       }
+    ],
+    loaders: [
+      {
+        test: /\.js$/,
+        exclude: /(node_modules|bower_components)/,
+        loader: 'babel',
+        query: {
+          presets: ['es2015']
+        }
+      }
     ]
-  },
-  externals: {
-    'AMap': 'AMap',
-    'AMapUI': 'AMapUI'
   }
 }
 
 module.exports = vuxLoader.merge(webpackConfig, {
-  plugins: ['vux-ui', 'progress-bar', 'duplicate-style', 'inline-manifest'],
+  plugins: ['vux-ui', 'progress-bar', 'duplicate-style']
 })

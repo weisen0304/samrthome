@@ -5,11 +5,10 @@
       <x-header :left-options="{showBack: true}" :title="'我的家庭'">
       </x-header>
     </div>
-
     <!--body栏-->
     <group style="text-align: left;margin: 20px 0;">
-      <cell link="/me/my_family/family_info/info_qrcode"
-            title="我的家庭"
+      <cell @click.native="clickFamilyInfo"
+            :title="data.familyName"
             is-link>
         <div>
           <img slot="right"
@@ -21,57 +20,59 @@
     </group>
 
     <group title="基本信息" style="text-align: left;margin: 20px 0;">
-      <cell link="/me/my_family/family_info/family_photo"
+      <cell @click.native="clickPhoto"
             inline-desc="给家庭挑选或拍一张图片"
             style="margin: 10px 0;text-align: center"
             is-link>
         <img slot="icon"
              width="120" height="60"
-             src="../../assets/img/bg01.jpg"
+             :src="data.photo !== ''?'http://120.79.21.193/SmartHome'+data.photo:familyImg"
              style="margin-right: 10px;opacity: .6;">
       </cell>
-      <cell link="/me/my_family/family_info/family_roles"
+      <cell @click.native="clickAddress"
             title="家庭成员"
             is-link></cell>
-      <cell link="/me/my_family/family_info/rooms_manage"
-            title="房间管理" value="21间" is-link></cell>
-
-      <x-address @on-hide="logHide" @on-show="logShow"
-                 title="当前家庭住址" v-model="value" :list="addressData"
-                 @on-shadow-change="onShadowChange" placeholder="请选择地址"
+      <x-address style="display:none;" title="当前家庭住址" v-model="value" :list="addressData" placeholder="请选择地址"
                  :show.sync="showAddress"></x-address>
-
-      <cell link="/me/my_family/family_info/houseload_electricity"
-        title="当地电价" is-link></cell>
     </group>
-
-    <group style="text-align: left;margin: 20px 0;">
-      <cell title="授权中心" is-link></cell>
-    </group>
-
-
   </div>
 </template>
 
 <script>
-  import {XHeader,ChinaAddressV4Data, XAddress, Group, Cell} from 'vux'
+  import {XHeader, ChinaAddressV4Data, XAddress, Group, Cell} from 'vux'
   export default {
     data() {
       return {
-        value: [],
+        data: [],
+        familyName: '',
         showAddress: false,
-        addressData: ChinaAddressV4Data
+        addressData: ChinaAddressV4Data,
+        value: [],
+        familyId: '',
+        familyImg: 'http://www.xiaoxiangba.com/assets/img/bg01.jpg'
       }
     },
+    created() {
+      this.clickInit()
+    },
     methods: {
-      onShadowChange (ids, names) {
-//        console.log(ids, names)
+      clickInit(){
+        var id = this.$route.query.id;
+        this.$axios.get(`/SmartHome/get_family/${id}`)
+          .then((res) => {
+            this.data = res.data[0]
+            this.address = res.data[0].familyAddress
+            this.familyId = res.data[0].id
+          })
       },
-      logHide (str) {
-//        console.log('on-hide', str)
+      clickPhoto(){
+        this.$router.push({path: '/my_family/family_photo', query: {familyId: this.familyId}})
       },
-      logShow (str) {
-//        console.log('on-show')
+      clickFamilyInfo(){
+        this.$router.push({path: '/my_family/info_qrcode', query: {familyId: this.familyId}})
+      },
+      clickAddress(){
+        this.$router.push({path: '/my_family/family_roles', query: {familyId: this.familyId}})
       }
     },
     components: {
@@ -82,7 +83,3 @@
     }
   }
 </script>
-
-<style lang="less" scoped>
-
-</style>

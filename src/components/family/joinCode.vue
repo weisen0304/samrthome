@@ -22,21 +22,27 @@
   export default {
     data() {
       return {
-        joinCode: ''
+        joinCode: '',
+        familyId:''
       }
     },
     methods: {
+      clickInit(){
+        var id = JSON.parse(localStorage.mydata).user.id
+        this.$axios.get(`/SamrtHome/get_family?id=${id}`)
+          .then((res) => {
+            this.familyId = res.data[0].id
+          })
+      },
       joinList() {
         this.$vux.loading.show()
         setTimeout(() => {
           this.$vux.loading.hide()
-          if (this.joinCode == '123') {
-            this.$router.push('/me/my_family')
-          } else {
-            this.$vux.alert.show({
-              title: '无效的邀请码!'
-            })
-          }
+          var id = JSON.parse(localStorage.mydata).user.id
+          this.$axios.post('/SamrtHome/add_member', {
+            userId: id,
+            uniqueCode: this.joinCode
+          })
         }, 1000)
       }
     },

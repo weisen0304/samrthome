@@ -1,7 +1,7 @@
 <template>
   <div>
     <div>
-      <x-header :left-options="{showBack: false}" style="background: #fff">
+      <x-header style="background: #fff">
         <router-link to="/Home" slot="left">取消</router-link>
         <span
           style="color: #aaa">选择设备型号</span>
@@ -13,12 +13,10 @@
         </div>
       </x-header>
     </div>
-
     <p>当前型号</p>
-
     <group label-width="4.5em" label-margin-right="2em" label-align="left">
       <div v-for="item in list">
-        <cell :title="item.title" link="/mydevice/deviceType/waterBettle" is-link>
+        <cell :title="item.title" link="/add_device" is-link>
           <img slot="icon" width="40" style="display:block;margin-right:5px;" :src="item.url + item.img">
         </cell>
       </div>
@@ -52,7 +50,6 @@
     },
     methods: {
       onClick () {
-        console.log(this.stringValue)
         this.$vux.loading.show({
           text: '加载中'
         })

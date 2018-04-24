@@ -6,6 +6,7 @@ import loadingMutations from './loading/mutations'
 import localStroageMutations from './localStroage/mutations'
 import familyMutations from './family/mutations'
 import deviceMutations from './device/mutations'
+import registerMutations from './register/mutations'
 
 Vue.use(Vuex)
 
@@ -21,6 +22,13 @@ const login = {
     }
   },
   mutations: loginMutations
+}
+
+const register = {
+  state: {
+    code: ''
+  },
+  mutations: registerMutations
 }
 
 const loading = {
@@ -61,6 +69,7 @@ export default new Vuex.Store({
     loading,
     showComplete,
     family,
-    device
+    device,
+    register
   }
 })

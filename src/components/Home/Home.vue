@@ -1,5 +1,5 @@
 <template>
-  <div style="height: 100%;background: url('http://www.xiaoxiangba.com/assets/img/bg01.jpg')">
+  <div :style="'height: 100%;background: url('+bgImg+');background-position: center;opacity:.85;'">
     <!--header导航条-->
     <x-header :left-options="{showBack: false}"
               :title="'首页'">
@@ -8,14 +8,25 @@
              src="http://www.xiaoxiangba.com/assets/img/add.png"
              @click.native="clickMore"></x-img>
     </x-header>
-
-    <x-button @click.native="clickCheckDevice"
+    <div style="margin: 10px 0 0 10px;float: left;position: relative">
+      <div>
+        <img slot="icon" :src="myImage" @click="clickChangeBg" style="width: 40px;height: 40px;border-radius: 50%;border: 2px solid #fff;
+">
+        <span style="line-height: 12px;font-size:14px;color: #fff;margin-left: 5px;">{{showFamilyName}}</span>
+      </div>
+      <group v-if="showFamliyList"
+             style="position: absolute;width: 180px;color: #333;">
+        <div v-for="(item,index) in familyData" :key="item.id"
+             @click="clickFamilyId(item.id,index)" style="margin: 5px;padding: 5px;">{{item.familyName}}
+        </div>
+      </group>
+    </div>
+    <x-button @click.native="clickDevice"
               style="position: fixed;margin: 80px 10%;
               bottom: 0px;width: 80%;border-radius: 40px;
               opacity: .7;color: #999999;">
       查询设备
     </x-button>
-
     <!--tabbar导航栏-->
     <div>
       <tabbar style="position: fixed;">
@@ -38,49 +49,79 @@
 
 <script>
   import {
+    Group,
     XImg,
     XButton,
     XHeader,
+    Radio,
     Tabbar,
     TabbarItem
   } from 'vux'
 
   export default {
     data () {
-      return {}
+      return {
+        showFamliyList: false,
+        showFamilyName: '我的家庭',
+        showFamily: false,
+        myImage: '',
+        familyName: [],
+        familyData: [],
+        currentFamily: [],
+        familyId: '',
+        PId: '',
+        bgImg: ''
+      }
     },
     components: {
+      Group,
       XImg,
       XButton,
       XHeader,
+      Radio,
       Tabbar,
       TabbarItem
     },
+    watch: {
+      type(val){
+        if (val) {
+          this.showFamily = !this.showFamily
+        }
+      }
+    },
+    created(){
+      this.clickInit()
+      this.myImage = 'http://120.79.21.193/SmartHome' + JSON.parse(localStorage.mydata).user.photo
+    },
     methods: {
-      clickMore() {
-        this.$router.push('/mydevice')
-      },
-      clickCheckDevice() {
-        this.$vux.loading.show()
-        var data = JSON.parse(localStorage.mydata)
-
-        var id = data.family.id
-        this.$http.get('http://120.79.21.193/SmartHome/devices/' + id, {}).then((res) => {
-          this.$store.commit('deviceInfo', res.body)
-          this.$router.push('/user_device')
-        }).catch((err)=>{
-          this.$vux.alert.show({
-            content: '网络状态为：'+ err.status
+      clickInit(){
+        var id = JSON.parse(localStorage.mydata).user.id
+        this.$axios.get('/SmartHome/get_family?id=' + id)
+          .then((res) => {
+            var currentFamily = JSON.parse(localStorage.getItem('currentFamily'))
+            this.familyData = res.data
+            this.bgImg = 'http://120.79.21.193/SmartHome' + currentFamily.photo
+            this.familyId = currentFamily.id
           })
-        })
-        setTimeout(() => {
-          this.$vux.loading.hide()
-        }, 2000)
+      },
+      clickFamilyId(id, idx){
+        this.currentFamily = this.familyData[idx]
+        localStorage.setItem('currentFamily', JSON.stringify(this.currentFamily))
+        var currentFamily = JSON.parse(localStorage.getItem('currentFamily'))
+        this.bgImg = 'http://120.79.21.193/SmartHome' + currentFamily.photo
+        this.showFamilyName = currentFamily.familyName
+        this.familyId = currentFamily.id
+        this.showFamliyList = false
+      },
+      clickChangeBg(){
+        this.showFamliyList = true
+      },
+      clickDevice() {
+        this.$router.push({path: '/user_device', query: {familyId: this.familyId}})
+      },
+      clickMore() {
+        this.$router.push({path: '/all_device', query: {familyId: this.familyId}})
       }
     }
   }
 </script>
-
-<style lang="less" scoped>
-
-</style>

@@ -6,72 +6,70 @@
       </x-header>
     </div>
 
-    <!--<checklist-->
-    <!--ref="demoObject"-->
-    <!--label-position="right"-->
-    <!--:options="commonList"-->
-    <!--v-model="checklist"-->
-    <!--@on-change="change"-->
-    <!--@click.native="showAlert"></checklist>-->
-
-    <checklist ref="demoObject"
-               title="删除成员将不能操作设备，请慎重！"
-               :options="commonList"
-               v-model="objectListValue"
-               @on-change="change"
-               @click.native="getFullValue"></checklist>
-
-    <div style="padding:15px;">
-      <x-button type="primary" @click.native="getFullValue">删除成员</x-button>
-    </div>
+    <swipeout class="vux-1px-tb" style="margin: 10px 0;">
+      <swipeout-item  class="vux-1px-tb" transition-mode="follow" v-for="item in data" :key="item.id">
+        <div slot="right-menu">
+          <swipeout-button type="warn" @click.native="clickDetele(item.id)">删除</swipeout-button>
+        </div>
+        <div slot="content" style="padding: 4px;">
+          <cell :inline-desc="item.nickname">
+            {{item.phone}}
+            <img slot="icon"
+                 width="60" height="60"
+                 :src="'http://192.168.3.8:8080/SmartHome'+item.photo"
+                 style="margin-right: 10px;opacity: .8;border-radius: 50%">
+          </cell>
+        </div>
+      </swipeout-item>
+    </swipeout>
 
   </div>
 </template>
 
 <script>
-  import {XHeader, XButton, Checklist, Group, CellBox} from 'vux'
+  import {XHeader, XButton, Cell, Checklist, Group, CellBox, Swipeout, SwipeoutItem, SwipeoutButton} from 'vux'
   export default {
     data() {
       return {
-        fullValues: [],
-        commonList: [this.$store.state.login.userInfo[0].user.username],
-        checklist: [],
-        showDelete: false,
-        objectList: [{key: '1', value: '001 value'}, {key: '2', value: '002 value'}, {key: '3', value: '003 value'}],
-        objectListValue: [],
+        data: []
       }
     },
+    created(){
+      this.clickInit();
+    },
     methods: {
-      change (val, label) {
-        if (val != '') {
-
-        }
-      },
-      showAlert() {
-        console.log()
-      },
-      getFullValue() {
-        const _this = this // 需要注意 onCancel 和 onConfirm 的 this 指向
-        if (_this.objectListValue != '') {
-          this.$vux.confirm.show({
-            title: '删除成员',
-            content: '删除某某，则其不能操作家庭中电器，请慎重！',
-            onCancel () {
-              _this.objectListValue = []
-              console.log(_this.checklist)
-            },
-            onConfirm () {
-            }
+      clickInit(){
+        var id = JSON.parse(localStorage.mydata).user.id
+        var familyId = parseInt(this.$route.query.familyId)
+        this.$axios.get(`/SmartHome/get_normal_member?userId=${id}&familyId=${familyId}`)
+          .then((res) => {
+            this.data = res.data
           })
-        }
-      }
+      },
+      clickDetele(deleteUserId){
+        var that = this;
+        var userId = JSON.parse(localStorage.mydata).user.id
+        var familyId = this.$route.query.familyId
+        this.$axios.post('/SmartHome/del_member', {
+          userId: userId,
+          familyId: familyId,
+          deleteUserId: deleteUserId
+        })
+          .then((res) => {
+            that.clickInit()
+          })
+      },
     },
     components: {
       XHeader,
       XButton,
       Checklist,
+      Cell,
       CellBox,
-      Group
+      Group,
+      Swipeout,
+      SwipeoutItem,
+      SwipeoutButton
     }
   }
 </script>

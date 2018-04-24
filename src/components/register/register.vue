@@ -4,7 +4,7 @@
       style="color: #aaa">注册</span></x-header>
 
     <group style="width: 90%;margin-left: 5%;text-align: left">
-      <cell :title="'中国'" is-link>+86</cell>
+      <cell @click.native='clickAddress' :title="addressCity" :value="'+'+addressNum" is-link></cell>
     </group>
 
     <group style="width: 90%;margin-left: 5%;border:1px solid inherit;border-radius: 20px;">
@@ -12,60 +12,121 @@
                keyboard="number" is-type="china-mobile" v-model="phoneNum"></x-input>
     </group>
 
-    <x-button @click.native="isRegister" style="width: 90%;margin-left: 5%;margin-top: 20px;margin-bottom: 20px;">
+    <x-button @click.native="clickNext" :disabled="isNext" type="primary"
+              style="width: 90%;margin-left: 5%;margin-top: 20px;margin-bottom: 20px;">
       下一步
     </x-button>
+
+    <div style='font-size: 12px;'>注册即同意
+      <router-link to='/' style='text-decoration: underline;color: #FFB90F;'>用户协议与隐私条款</router-link>
+    </div>
+
+    <div v-transfer-dom>
+
+      <popup v-model="showAddress" position="bottom" style='height: 100%;'>
+        <search
+          position="absolute"
+          auto-scroll-to-top top="0px"></search>
+
+        <group v-for='i in 26' :key='i' :title="String.fromCharCode((64+i))" style='top: 20px;'>
+          <cell @click.native='clickNum(item)' v-for="item in items" :key="item.id" :title="item.title"
+                :value="item.value"></cell>
+        </group>
+
+        <div style='position: fixed;right: 5px;top: 150px;'>
+          <p v-for="i in 26" style='font-size: 12px;line-height:14px;color:#e00;'>{{String.fromCharCode((64 + i))}}</p>
+        </div>
+      </popup>
+    </div>
   </div>
 </template>
 
 <script>
-  import {XHeader, Group, Cell, XInput, XButton} from 'vux'
+  import {XHeader, Group, Cell, XInput, XButton, Popup, TransferDom, Search} from 'vux'
   export default {
+    directives: {
+      TransferDom
+    },
     components: {
       XHeader,
       Group,
       Cell,
       XInput,
-      XButton
+      XButton,
+      Popup,
+      Search
     },
     data() {
       return {
-        phoneNum: ''
+        phoneNum: '',
+        showAddress: false,
+        addressCity: '中国',
+        addressNum: '0086',
+        items: [
+          {
+            id: 1,
+            title: '中国',
+            value: '0086'
+          }, {
+            id: 2,
+            title: '日本',
+            value: '0082'
+          }, {
+            id: 3,
+            title: '韩国',
+            value: '0023'
+          }, {
+            id: 4,
+            title: '美国',
+            value: '0032'
+          }
+        ],
+        isNext: true
       }
     },
     methods: {
-      isRegister() {
-        if (this.phoneNum == '15622633852') {
-          this.nextRegister()
-        }
+      clickAddress() {
+        this.showAddress = true
       },
-      nextRegister() {
-        let password_sha = hex_sha1(hex_sha1(this.phoneNum));
-        //需要想后端发送的登录参数
-        let loginParam = {
-          phoneNum: this.phoneNum,
-
-          password_sha
+      clickNum(item) {
+        this.addressNum = item.value
+        this.addressCity = item.title
+        this.showAddress = false
+      },
+      clickNext() {
+        var that = this
+        if (this.phoneNum.length === 11) {
+          this.$vux.loading.show()
+          setTimeout(() => {
+            this.$vux.loading.hide()
+           this.$axios.post('/SamrtHome/isRegister', {
+              phone: that.phoneNum
+            })
+              .then((res) => {
+                console.log(res)
+                if (res.status === 200 && res.data == 'validSuccess') {
+                  this.$router.push({path: '/register/SMS',query: {phone:that.phoneNum,code: res.data }})
+                } else {
+                  console.log('网络错误')
+                }
+              })
+              .catch((res) => {
+                console.log((res))
+              })
+          }, 500)
+        } else {
+          this.$vux.alert.show({
+            content: '手机号码错误'
+          })
         }
-        this.$http.post('http://localhost:9090/data', {
-          params: {
-            id: 1,
-            loginParam
-          },
-        }).then((res) => {
-          console.log(res)
-          if (res.status === 201) {
-            setTimeout(() => {
-//              let expireDays = 1000 * 60 * 60 * 24 * 15;
-//              this.setCookie('session', res.data.session, expireDays);
-              //登录成功后
-              this.$router.push('/register/SMS')
-            }, 1000)
-          } else {
-            this.show = true
-          }
-        }), (err) => {
-          console.log(err)
+      }
+    },
+    watch: {
+      phoneNum: function (val, oldVal) {
+        if (this.phoneNum.length == 11) {
+          this.isNext = false
+        } else {
+          this.isNext = true
         }
       }
     }

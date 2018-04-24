@@ -6,7 +6,6 @@
 </template>
 
 <script>
-
   export default {
     data() {
       return {}
@@ -15,10 +14,19 @@
 </script>
 
 <style lang="less">
-  @import '~vux/src/styles/reset.less';
-
   html, body, #app {
     height: 100%;
+    margin: 0;
+    padding: 0;
+  }
+  a {
+    display: block;
+    color: -webkit-link;
+    cursor: auto;
+    text-decoration: none;
+  }
+  p{
+    margin: 0;
   }
 
   body {

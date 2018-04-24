@@ -8,7 +8,7 @@
     </div>
 
     <group title="我的家庭名称">
-      <x-input :value="createdName" v-model="createdName">
+      <x-input :value="familyName" v-model="familyName">
       </x-input>
       <x-button @click.native="saveCreated"
                 style="margin-top: 20px;">
@@ -23,19 +23,22 @@
   export default {
     data() {
       return {
-        createdName: '我的家庭'
+        familyName: '我的家庭'
       }
+    },
+    created() {
     },
     methods: {
       saveCreated() {
-        this.$store.commit('createdManage', this.createdName)
-        console.log(this.createdName)
-        this.$vux.loading.show({})
-        setTimeout(() => {
-          this.$vux.loading.hide()
-          this.$router.push('/me/my_family')
-        }, 1000)
-
+        var that = this;
+        var id = JSON.parse(localStorage.mydata).user.id
+        this.$axios.post('/SmartHome/add_family', {
+          id: id,
+          familyName: this.familyName
+        })
+          .then((res) => {
+            that.$router.go(-1)
+          })
       }
     },
     components: {
@@ -46,7 +49,3 @@
     }
   }
 </script>
-
-<style lang="less" scoped>
-
-</style>

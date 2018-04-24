@@ -1,14 +1,10 @@
 <template>
   <div style="height: 660px;background: #333;color: #fff">
-
     <!--header导航条-->
     <x-header :left-options="{showBack: true}"
-              :right-options="{showMore: true}"
-              @on-click-more="clickMore"
               style="background: #333;color: #fff;">
       <span style="color: #fff;">SN001</span>
     </x-header>
-
     <!--功能状态栏-->
     <div :class="{'open-button': !lightClass}" v-show="lightClass">
       <div style='width:150px;height:120px;margin: 150px auto;margin-bottom: 40px;'>
@@ -40,7 +36,6 @@
         </checker>
       </div>
     </div>
-
     <!--tabbar功能栏-->
     <tabbar style="background: #333;color: #ccc;"
             default-item-class="demo-item"
@@ -64,10 +59,8 @@
         <span slot="label">定时</span>
       </tabbar-item>
     </tabbar>
-
     <!--待开发组件-->
     <TODO @close="todoStatus = false" v-show="todoStatus"></TODO>
-
   </div>
 </template>
 
@@ -162,42 +155,19 @@
       }
     },
     created() {
-//      let data = this.list[1]
-//      let Adjustment = data.Functions.Adjustment.AdjustSwitch
-//      let BoilMode = data.Functions.BoilMode.BoilSwitch
-//      let KeepWarm = data.Functions.KeepWarm.WarmSwitch
-//      let ManualMode = data.Functions.ManualMode.Manual
-//      setTimeout(() => {
-//        this.$http.get('http://localhost:9090/list?id=' + data.ID + '&instruct=' + data.Functions.KeepWarm.WarmSwitch, {
-//          data
-//        }).then((res) => {
-//          console.log(res)
-//        }), (err) => {
-//          console.log(err)
-//        }
-//      }, 1000)
-//      setTimeout(() => {
-//        this.$http.post('http://localhost:9090/post?id=' + data.ID + '&instruct=' + data.Functions.KeepWarm.WarmSwitch, {
-//          data
-//        }).then((res) => {
-//          console.log(res)
-//        }), (err) => {
-//          console.log(err)
-//        }
-//      })
     },
     methods: {
       clickMore() {
-        this.$router.push('/deldevice')
+        this.$router.push('/del_device')
       },
       showLight() {
+          var deviceId = this.$route.query.deviceId
         this.$vux.loading.show({
           text: 'loading'
         })
-
         setTimeout(() => {
 //          this.lightClass = !this.lightClass
-          this.$router.push('/device_detail')
+          this.$router.push({path: '/device_detail',query: {deviceId: deviceId}})
           this.$vux.loading.hide()
         }, 3000)
 
